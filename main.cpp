@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
 #include <curl/curl.h>
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 // Callback function for writing received data to a string
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *out)
@@ -22,7 +25,7 @@ int main()
         std::string readBuffer;
 
         // Set the URL
-        curl_easy_setopt(curl, CURLOPT_URL, "https://jsonplaceholder.typicode.com/posts/1");
+        curl_easy_setopt(curl, CURLOPT_URL, "https://test.deribit.com/api/v2/public/get_order_book?depth=10&instrument_name=BNB_USDC");
 
         // Set the callback function to write the data
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -40,7 +43,11 @@ int main()
         }
         else
         {
-            std::cout << "Response: " << readBuffer << std::endl;
+            json jsonData = json::parse(readBuffer);
+            std::cout << "jsonrpc: " << jsonData["jsonrpc"] << std::endl;
+            std::cout << "Top Bid Price: " << jsonData["result"]["bids"][0][0] << std::endl;
+            std::cout << "Top Bid Contestants: " << jsonData["result"]["bids"][0][1] << std::endl;
+            std::cout << "timetaken: " << ((size_t)jsonData["usOut"] - (size_t)jsonData["usIn"]) << " microseconds" << std::endl;
         }
 
         // Cleanup
