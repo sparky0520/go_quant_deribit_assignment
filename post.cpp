@@ -5,6 +5,8 @@
 
 using json = nlohmann::json;
 
+// Posting client id and secret and using it to get response from a protected route.
+
 // Callback function to write received data
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *out)
 {
