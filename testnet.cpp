@@ -58,6 +58,7 @@ int main()
             {
                 req.set(http::field::user_agent,
                         std::string(BOOST_BEAST_VERSION_STRING) + " jsonrpc-websocket-client");
+                // req.set(http::field::content_type, "application/json");
             }));
 
         ws.handshake("test.deribit.com", "/ws/api/v2");
@@ -104,3 +105,5 @@ int main()
     }
     return EXIT_SUCCESS;
 }
+
+// {"method": "public/get_order_book","params": {"instrument_name": "BNB_USDC"},"jsonrpc": "2.0","id": 6}
