@@ -24,7 +24,7 @@ std::string create_jsonrpc_request()
     request["method"] = "public/ticker";
 
     json::object params;
-    params["instrument"] = "BTC-24AUG18-6500-P";
+    params["instrument"] = "ETH-PERPETUAL";
     request["params"] = params;
 
     return json::serialize(request);
@@ -63,15 +63,37 @@ int main()
         ws.handshake("test.deribit.com", "/ws/api/v2");
         std::cout << "Connected to websocket server\n";
 
-               // Create and send JSON-RPC request
+        // Create and send JSON-RPC request
         std::string request = create_jsonrpc_request();
-        ws.write(net::buffer(request));
-        std::cout << "Sent request: " << request << std::endl;
+        int flag;
+        while (1)
+        {
+            std::cout << "Enter 0 to send empty message\nEnter 1 to send test message\nEnter 2 to send custom message\nDefault - Exit Program ";
+            std::cin >> flag;
+            switch (flag)
+            {
+            case 0:
+                request = "";
+                break;
 
-        // Receive response
-        beast::flat_buffer buffer;
-        ws.read(buffer);
-        std::cout << "Received: " << beast::make_printable(buffer.data()) << std::endl;
+            case 1:
+                break;
+
+            case 2:
+                std::cin >> request;
+                break;
+
+            default:
+                return 0;
+            }
+            ws.write(net::buffer(request));
+            std::cout << "Sent request: " << request << std::endl;
+
+            // Receive response
+            beast::flat_buffer buffer;
+            ws.read(buffer);
+            std::cout << "Received: " << beast::make_printable(buffer.data()) << '\n';
+        }
 
         ws.close(websocket::close_code::normal);
     }
