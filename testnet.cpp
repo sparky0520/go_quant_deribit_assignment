@@ -20,11 +20,11 @@ std::string create_jsonrpc_request()
 {
     json::object request;
     request["jsonrpc"] = "2.0";
-    request["id"] = 8666;
+    request["id"] = 0;
     request["method"] = "public/ticker";
 
     json::object params;
-    params["instrument"] = "ETH-PERPETUAL";
+    params["instrument_name"] = "ETH-PERPETUAL";
     request["params"] = params;
 
     return json::serialize(request);
@@ -65,7 +65,7 @@ int main()
         std::cout << "Connected to websocket server\n";
 
         // Create and send JSON-RPC request
-        std::string request = create_jsonrpc_request();
+        std::string request;
         int flag;
         while (1)
         {
@@ -78,6 +78,7 @@ int main()
                 break;
 
             case 1:
+                request = create_jsonrpc_request();
                 break;
 
             case 2:
