@@ -65,13 +65,13 @@ std::string subscription_handle_request(const int methodEnum, const char *channe
         method_str = "public/unsubscribe";
         break;
     case 2:
-        method_str = "public/unsubscribe_all";
-        break;
-    case 3:
         method_str = "private/subscribe";
         break;
-    case 4:
+    case 3:
         method_str = "private/unsubscribe";
+        break;
+    case 4:
+        method_str = "public/unsubscribe_all";
         break;
     case 5:
         method_str = "private/unsubscribe_all";
