@@ -1,6 +1,8 @@
+_This is the official submission for **GoQuant** assignment by Darsh Jain._
+
 # http.cpp
 
-Making HTTP Requests using C++ on the deribit api to make transactions on the deribit test network.
+Making HTTP requests using C++ on the deribit api to make transactions on the deribit test network.
 
 ### dependencies installation - Linux
 
