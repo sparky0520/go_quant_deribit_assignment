@@ -185,6 +185,8 @@ int main()
             }
             case 0:
                 std::cout << "Gracefully closing connection\n";
+                subscription_handle_request(method::public_unsubscribe_all, "", ws);
+                subscription_handle_request(method::private_unsubscribe_all, "", ws);
                 ws.close(websocket::close_code::normal);
                 std::cout << "Exiting program\n";
                 return 0;
