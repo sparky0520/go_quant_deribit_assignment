@@ -11,6 +11,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/asio/connect.hpp>
 #include <iostream>
+#include <thread>
 
 namespace beast = boost::beast;
 namespace json = boost::json;
@@ -26,7 +27,7 @@ std::string TARGET_ROUTE = "/ws/api/v2";
 
 enum method
 {
-    // Possible method values arg in get_subscription_handle_request function. Replace _ with / except in unsubscribe_all
+    // Possible methodEnum args in get_subscription_handle_request function. Replace _ with / except in unsubscribe_all
     public_subscribe,
     public_unsubscribe,
     private_subscribe,
@@ -52,7 +53,7 @@ get_auth_request()
     return json::serialize(request);
 }
 
-std::string get_subscription_handle_request(const int methodEnum, const char *channel_str)
+std::string subscription_handle_request(const int methodEnum, const char *channel_str, websocket::stream<beast::ssl_stream<tcp::socket>> &ws)
 {
     const char *method_str;
     switch (methodEnum)
@@ -91,7 +92,17 @@ std::string get_subscription_handle_request(const int methodEnum, const char *ch
     params["channels"] = channels;
     request["params"] = params;
 
-    return json::serialize(request);
+    std::string subreq = json::serialize(request);
+    ws.write(net::buffer(subreq));
+    std::cout << "Sent request: " << subreq << '\n';
+
+    // receiving response
+    beast::flat_buffer buffer;
+    while (1)
+    {
+        ws.read(buffer);
+        std::cout << "Received: " << beast::make_printable(buffer.data()) << "\n\n\n";
+    }
 }
 
 int main()
@@ -137,57 +148,52 @@ int main()
 
         // event loop - public/subscribe and public/unsubscribe for broadcasting
         int flag;
-        std::string subreq;
         std::string channel_str;
-
-        std::cout << "Enter full channel string to subscribe to: ";
-        std::cin >> channel_str;
-        subreq = get_subscription_handle_request(method::public_subscribe, channel_str.c_str());
-        ws.write(net::buffer(subreq));
-        std::cout << "Sent request: " << subreq << '\n';
 
         // receiving response
         beast::flat_buffer subBuffer;
-        for (int i = 0; i < 1000000; i++)
-        {
-            ws.read(subBuffer);
-            std::cout << "Received: " << beast::make_printable(subBuffer.data()) << '\n';
-        }
 
-        // while (1)
+        // for (int i = 0; i < 1000000; i++)
         // {
-        //     std::cout << "Websocket subscription menu: \n\n1. Subscibe\n2. Unsubscribe\n0. Exit program.\n\n";
-        //     std::cin >> flag;
-        //     switch (flag)
-        //     {
-        //     case 1:
-        //         std::cout << "Enter full channel string to subscribe to: ";
-        //         std::cin >> channel_str;
-        //         subreq = get_subscription_handle_request(method::public_subscribe, channel_str.c_str());
-        //         break;
-        //     case 2:
-        //         std::cout << "Enter full channel string to unsubscribe from: ";
-        //         std::cin >> channel_str;
-        //         subreq = get_subscription_handle_request(method::public_unsubscribe, channel_str.c_str());
-        //         break;
-        //     case 0:
-        //         std::cout << "Gracefully closing connection\n";
-        //         ws.close(websocket::close_code::normal);
-        //         std::cout << "Exiting program\n";
-        //         return 0;
-        //         break;
-        //     default:
-        //         std::cout << "Invalid input\n";
-        //         break;
-        //     }
-        // ws.write(net::buffer(subreq));
-        // std::cout << "Sent request: " << subreq << '\n';
-
-        // // receiving response
-        // beast::flat_buffer buffer;
-        // ws.read(buffer);
-        // std::cout << "Received: " << beast::make_printable(buffer.data()) << '\n';
+        //     ws.read(subBuffer);
+        //     std::cout << "Received: " << beast::make_printable(subBuffer.data()) << '\n';
         // }
+
+        while (1)
+        {
+            std::cout << "Websocket subscription menu: \n\n1. Subscibe\n2. Unsubscribe\n0. Exit program.\n\n";
+            std::cin >> flag;
+            switch (flag)
+            {
+            case 1:
+            {
+                std::cout << "Enter full channel string to subscribe to: ";
+                std::cin >> channel_str;
+                std::thread subscribeThread([channel_str, &ws]() // Spawning a new thread to handle the subscription
+                                            { subscription_handle_request(method::public_subscribe, channel_str.c_str(), ws); });
+                subscribeThread.detach(); // Detach the thread to run independently
+                break;
+            }
+            case 2:
+            {
+                std::cout << "Enter full channel string to unsubscribe from: ";
+                std::cin >> channel_str;
+                std::thread unsubscribeThread([channel_str, &ws]() // Spawn a new thread to handle the unsubscription
+                                              { subscription_handle_request(method::public_unsubscribe, channel_str.c_str(), ws); });
+                unsubscribeThread.detach(); // Detach the thread to run independently
+                break;
+            }
+            case 0:
+                std::cout << "Gracefully closing connection\n";
+                ws.close(websocket::close_code::normal);
+                std::cout << "Exiting program\n";
+                return 0;
+                break;
+            default:
+                std::cout << "Invalid input\n";
+                break;
+            }
+        }
     }
     catch (const std::exception &e)
     {
