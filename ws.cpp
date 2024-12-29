@@ -27,13 +27,13 @@ int main()
 
         // TCP resolver for resolving server address
         tcp::resolver resolver(ioc);
-        auto const results = resolver.resolve("ws.postman-echo.com", "443");
+        auto const results = resolver.resolve("test.deribit.com/ws/api/v2", "443");
 
         // Websocket stream with SSL
         websocket::stream<beast::ssl_stream<tcp::socket>> ws{ioc, ctx};
 
         // Set SNI hostname (required for connection)
-        if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), "ws.postman-echo.com"))
+        if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), "test.deribit.com/ws/api/v2"))
             throw beast::system_error(
                 beast::error_code(
                     static_cast<int>(::ERR_get_error()),
@@ -56,7 +56,7 @@ int main()
             }));
 
         // Perform WebSocket handshake
-        ws.handshake("ws.postman-echo.com", "/raw");
+        ws.handshake("test.deribit.com/ws/api/v2", "/public/get_order_book");
 
         std::cout << "Connected to websocket server\n";
 
