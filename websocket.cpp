@@ -150,15 +150,6 @@ int main()
         int flag;
         std::string channel_str;
 
-        // receiving response
-        beast::flat_buffer subBuffer;
-
-        // for (int i = 0; i < 1000000; i++)
-        // {
-        //     ws.read(subBuffer);
-        //     std::cout << "Received: " << beast::make_printable(subBuffer.data()) << '\n';
-        // }
-
         while (1)
         {
             std::cout << "Websocket subscription menu: \n\n1. Subscibe\n2. Unsubscribe\n0. Exit program.\n\n";
