@@ -1,6 +1,7 @@
 #include <string>
 #include <curl/curl.h>
 #include "json.hpp"
+#include <iostream>
 
 using json = nlohmann::json;
 
